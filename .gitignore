@@ -1,0 +1,8 @@
+node_modules/
+jsonData/node_modules/
+jsonData/uploads/
+ipfs/node_modules/
+ipfs/files
+.vs/
+.ipfs
+.vs

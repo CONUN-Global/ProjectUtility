@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ko" >
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Utility | 대시보드</title>
+    <meta name="description" content="Utility">
+    <meta name="author" content="manic">
+	<link rel="dns-prefetch" href="//fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
+    <link href="/stylesheets/style2.css" rel="stylesheet">
+	<!-- Livewire Styles -->
+	<script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="app">
+	<main>
+		<div class="container py-4">
+		<form id="jsonCreateForm" action="/json/store" method="post" enctype="multipart/form-data">
+			<div class="card">
+				<div class="card-header">
+					Project - Json Data 생성하기
+				</div><!--card-header-->
+
+				<div class="card-body">
+
+					<div class="form-row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="small mb-1" for="">MSG Type</label>
+								<input class="form-control" id="" name="msg_type" type="text" placeholder="Requester Project info" value="Requester_Project_info_v3" required />
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="small mb-1" for="">CMD Tag</label>
+								<input class="form-control" id="" name="cmd_tag" type="text" placeholder="NONE" required />
+							</div>
+						</div>
+					</div>
+					<div class="form-row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="small mb-1" for="">Project Sequence</label>
+								<input class="form-control" id="" name="proj_sequ" type="number" placeholder="1" value="1" />
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="small mb-1" for="">Project Flag</label>
+								<input class="form-control" id="" name="proj_flag" type="text" placeholder="RUNNING" required />
+							</div>
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="form-group">
+							<label class="small mb-1" for="">Project GUID</label>
+							<input class="form-control" id="" name="proj_guid" type="text" placeholder="QmWX9pWeNn876tNcoRGRevtGvyXHXdjNnU5KwEMHRdknZ3" required />
+						</div>
+					</div>
+					<div class="form-row">
+						<div class="col-md-6">
+							<div class="form-group has-success">
+								<label class="small mb-1" for="">Project Name</label>
+								<input class="form-control" id="" name="proj_name" type="text" placeholder="test_project" value="" />
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="small mb-1" for="">Project ID</label>
+								<input class="form-control" id="" name="proj_id" type="text" placeholder="10321" value="10001" required />
+							</div>
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="form-group">
+							<label class="small mb-1" for="">Project Description</label>
+							<textarea class="form-control" name="proj_desc" rows="3" placeholder="Description"></textarea>
+						</div>
+					</div>
+					<div class="form-row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="small mb-1" for="">Core Version</label>
+								<input class="form-control" id="" name="core_ver" type="number" placeholder="Version" value="1.1">
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="small mb-1" for="">sub_task_process_count</label>
+								<input class="form-control" id="" name="stp_count" type="number" placeholder="1" value="1">
+							</div>
+						</div>
+					</div>
+					<div class="form-row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="small mb-1" for="">Start Date</label>
+								<input class="form-control" type="datetime-local" name="st_date"/>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="small mb-1" for="">End Date</label>
+								<input class="form-control" type="datetime-local" name="en_date"/>
+							</div>
+						</div>
+					</div>
+					<div class="form-row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="small mb-1" for="">Payment Type</label>
+								<select class="form-control" name="pay_type">
+									<option value="start">START</option>
+									<option value="end">END</option>
+								</select>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="small mb-1" for="">Resource Mode</label><br>
+								<!--select class="form-control" name="resource_mode">
+									<option value="cpu">CPU</option>
+									<option value="gpu">GPU</option>
+								</select-->
+								<input class="form-control" id="" name="resource_mode" type="number" placeholder="1" value="1">
+							</div>
+						</div>
+					</div>
+					<div class="form-row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="small mb-1" for="">Credit</label>
+								<input class="form-control" id="" name="credit" type="number" placeholder="5000" value="5000">
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="small mb-1" for="">Task Model</label>
+								<input class="form-control" id="" name="task_model" type="text" placeholder="0">
+							</div>
+						</div>
+					</div>
+					<div class="form-row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="small mb-1" for="">Task Number (Total)</label>
+								<input class="form-control" id="" name="task_number_total" type="number" placeholder="12">
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="small mb-1" for="">Task Number (Done)</label>
+								<input class="form-control" id="" name="task_number_done" type="number" placeholder="12">
+							</div>
+						</div>
+					</div>
+          			<div class="form-row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="small mb-1" for="">Task Upload - Select</label>
+							<div class="form-group mt-2">
+							<input type="radio" id="multi" name="task_file_type" value="multi" checked="checked"> Files Uploads
+							<input type="radio" id="dir" name="task_file_type" value="dir"> Diretory Uploads
+                        </div>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="small mb-1" for="">Task Number (Done)</label>
+								<input class="form-control" id="task_file" name="task_file" type="file" accept="text/*" multiple/>
+							</div>
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="form-group">
+							<label class="small mb-1" for="">Data_server_type</label>
+							<input class="form-control" id="" name="type" type="text" placeholder="ipfs" value="ipfs">
+						</div>
+					</div>
+					<div class="form-row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="small mb-1" for="">IP Address</label>
+								<input class="form-control" id="" name="ip" type="text" placeholder="192.168.0.1" value="">
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="small mb-1" for="">Port</label>
+								<input class="form-control" id="" name="port" type="text" placeholder="5001" value="5001">
+							</div>
+						</div>
+					</div>
+					<div class="form-row">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="small mb-1" for="">ID</label>
+								<input class="form-control" id="" name="id" type="text" placeholder="ID" value="test">
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="small mb-1" for="">PW</label>
+								<input class="form-control" id="" name="pw" type="text" placeholder="Password" value="testpw">
+							</div>
+						</div>
+					</div>
+				</div><!--card-body-->
+				<div class="card-footer">
+  					<input type="submit" class="btn btn-primary float-right" value="Submit" id="SubmitBtnJson">
+				</div><!--card-footer-->
+			</div><!--card-->
+			<div class="file_list">
+				<p></p>
+			</div>
+			</form>
+		</div><!--container-->
+	</main>
+</div><!--app-->
+
+</body>
+</html>
+<script>
+$(document).ready(function() {
+  $('#multi').on('click', function() {
+    $('#task_file').removeAttr('webkitdirectory');
+    $('#task_file').attr('multiple','');
+  });
+  $('#dir').on('click', function() {
+    $('#task_file').removeAttr('multiple');
+    $('#task_file').attr('webkitdirectory','');
+  });
+});
+	/*
+// 폼전송
+const form = document.forms[0];
+form.addEventListener("submit", function(event) {
+	event.preventDefault();
+
+	buildJSON(this);
+});
+
+// json 생성, 저장
+function buildJSON(form) {
+	const data = new FormData(form);
+	const entries = data.entries();
+	const obj = Object.fromEntries(entries);
+	const json = JSON.stringify(obj);
+	const fileName = 'project.txt';
+
+	const el = document.createElement("a");
+	el.setAttribute("href", "data:application/json;charset=utf-8," + json);
+	el.setAttribute("download", fileName);
+	el.click();
+}
+*/
+</script>
