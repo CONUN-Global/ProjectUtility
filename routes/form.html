@@ -28,13 +28,13 @@
 						<div class="col-md-6">
 							<div class="form-group">
 								<label class="small mb-1" for="">MSG Type</label>
-								<input class="form-control" id="" name="msg_type" type="text" placeholder="Requester Project info" value="Requester_Project_info_v3" required />
+								<input class="form-control" id="" name="msg_type" type="text" placeholder="Requester Project info" value="Requester_Project_info_v3" />
 							</div>
 						</div>
 						<div class="col-md-6">
 							<div class="form-group">
 								<label class="small mb-1" for="">CMD Tag</label>
-								<input class="form-control" id="" name="cmd_tag" type="text" placeholder="NONE" required />
+								<input class="form-control" id="" name="cmd_tag" type="text" placeholder="NONE" value="NONE" readonly />
 							</div>
 						</div>
 					</div>
@@ -42,33 +42,33 @@
 						<div class="col-md-6">
 							<div class="form-group">
 								<label class="small mb-1" for="">Project Sequence</label>
-								<input class="form-control" id="" name="proj_sequ" type="number" placeholder="1" value="1" />
+								<input class="form-control" id="" name="proj_sequ" type="number" value="0" readonly/>
 							</div>
 						</div>
 						<div class="col-md-6">
 							<div class="form-group">
 								<label class="small mb-1" for="">Project Flag</label>
-								<input class="form-control" id="" name="proj_flag" type="text" placeholder="RUNNING" required />
+								<input class="form-control" id="" name="proj_flag" type="text" placeholder="NONE" value="NONE" readonly />
 							</div>
 						</div>
 					</div>
 					<div class="form-group">
 						<div class="form-group">
 							<label class="small mb-1" for="">Project GUID</label>
-							<input class="form-control" id="" name="proj_guid" type="text" placeholder="QmWX9pWeNn876tNcoRGRevtGvyXHXdjNnU5KwEMHRdknZ3" required />
+							<input class="form-control" id="" name="proj_guid" type="text" placeholder="NONE" value="NONE" readonly />
 						</div>
 					</div>
 					<div class="form-row">
 						<div class="col-md-6">
 							<div class="form-group has-success">
 								<label class="small mb-1" for="">Project Name</label>
-								<input class="form-control" id="" name="proj_name" type="text" placeholder="test_project" value="" />
+								<input class="form-control" id="" name="proj_name" type="text" placeholder="ProjectName" value="" required />
 							</div>
 						</div>
 						<div class="col-md-6">
 							<div class="form-group">
 								<label class="small mb-1" for="">Project ID</label>
-								<input class="form-control" id="" name="proj_id" type="text" placeholder="10321" value="10001" required />
+								<input class="form-control" id="" name="proj_id" type="text" placeholder="1000000000001" value="" required />
 							</div>
 						</div>
 					</div>
@@ -81,14 +81,19 @@
 					<div class="form-row">
 						<div class="col-md-6">
 							<div class="form-group">
-								<label class="small mb-1" for="">Core Version</label>
-								<input class="form-control" id="" name="core_ver" type="number" placeholder="Version" value="1.1">
+								<label class="small mb-1" for="">Project Type</label>
+								<select class="form-control" name="proj_type">
+									<option value="complete">complete</option>
+									<option value="find">find</option>
+									<option value="analyzer">analyzer</option>
+									<option value="etc">etc</option>
+								</select>
 							</div>
 						</div>
 						<div class="col-md-6">
 							<div class="form-group">
-								<label class="small mb-1" for="">sub_task_process_count</label>
-								<input class="form-control" id="" name="stp_count" type="number" placeholder="1" value="1">
+								<label class="small mb-1" for="">Core Version</label>
+								<input class="form-control" id="" name="core_ver" type="number" placeholder="Version" value="1">
 							</div>
 						</div>
 					</div>
@@ -136,22 +141,8 @@
 						</div>
 						<div class="col-md-6">
 							<div class="form-group">
-								<label class="small mb-1" for="">Task Model</label>
-								<input class="form-control" id="" name="task_model" type="text" placeholder="0">
-							</div>
-						</div>
-					</div>
-					<div class="form-row">
-						<div class="col-md-6">
-							<div class="form-group">
-								<label class="small mb-1" for="">Task Number (Total)</label>
-								<input class="form-control" id="" name="task_number_total" type="number" placeholder="12">
-							</div>
-						</div>
-						<div class="col-md-6">
-							<div class="form-group">
-								<label class="small mb-1" for="">Task Number (Done)</label>
-								<input class="form-control" id="" name="task_number_done" type="number" placeholder="12">
+								<label class="small mb-1" for="">sub_task_process_count</label>
+								<input class="form-control" id="" name="stp_count" type="number" placeholder="1" value="1">
 							</div>
 						</div>
 					</div>
@@ -167,7 +158,7 @@
 						</div>
 						<div class="col-md-6">
 							<div class="form-group">
-								<label class="small mb-1" for="">Task Number (Done)</label>
+								<label class="small mb-1" for="">Task Upload - Field</label>
 								<input class="form-control" id="task_file" name="task_file" type="file" accept="text/*" multiple/>
 							</div>
 						</div>
