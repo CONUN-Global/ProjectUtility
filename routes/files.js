@@ -453,7 +453,7 @@ router.post('/store', upload.array('task_file'), async function (req, res, next)
 
     var filename = '';
     if (req.body.msg_type) {
-        filename = req.body.msg_type + '.json';
+        filename = req.body.proj_name + '_' + req.body.proj_id + '.json';
     } else {
         filename = 'untitle_project.json';
     }

@@ -7,8 +7,8 @@
     <meta name="description" content="Utility">
     <meta name="author" content="manic">
 	<link rel="dns-prefetch" href="//fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
-    <link href="/stylesheets/style2.css" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">
 	<!-- Livewire Styles -->
 	<script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
 </head>
@@ -62,13 +62,13 @@
 						<div class="col-md-6">
 							<div class="form-group has-success">
 								<label class="small mb-1" for="">Project Name</label>
-								<input class="form-control" id="" name="proj_name" type="text" placeholder="ProjectName" value="" required />
+								<input class="form-control" id="proj_name" name="proj_name" type="text" placeholder="ProjectName" value="" required />
 							</div>
 						</div>
 						<div class="col-md-6">
 							<div class="form-group">
 								<label class="small mb-1" for="">Project ID</label>
-								<input class="form-control" id="" name="proj_id" type="text" placeholder="1000000000001" value="" required />
+								<input class="form-control" id="proj_id" name="proj_id" type="text" placeholder="1000000000001" value="" required />
 							</div>
 						</div>
 					</div>
@@ -199,7 +199,7 @@
 					</div>
 				</div><!--card-body-->
 				<div class="card-footer">
-  					<input type="submit" class="btn btn-primary float-right" value="Submit" id="SubmitBtnJson">
+  					<input type="submit" class="btn btn-primary float-right" value="Create" id="SubmitBtnJson">
 				</div><!--card-footer-->
 			</div><!--card-->
 			<div class="file_list">
@@ -210,8 +210,29 @@
 	</main>
 </div><!--app-->
 
+<!-- Modal -->
+<div class="modal fade" id="msg" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel">json 파일 생성중</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				Task 의 파일 개수에 따라 웹브라우저 처리속도가 차등적일수있습니다.<br>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
 </body>
 </html>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
 <script>
 $(document).ready(function() {
   $('#multi').on('click', function() {
@@ -223,6 +244,28 @@ $(document).ready(function() {
     $('#task_file').attr('webkitdirectory','');
   });
 });
+
+
+$('#SubmitBtnJson').click(function() {
+	//$(this).data('toggle', 'modal');
+	//$(this).data('target', '#msg');
+	if ( !$('#proj_name').val() ) {
+		alert("Name Check");
+		$('#proj_name').focus();
+		return false;
+	}
+	if ( !$('#proj_id').val() ) {
+		alert("ID Check");
+		$('#proj_id').focus();
+		return false;
+	}
+	$('#jsonCreateForm').submit(function() {
+		$('#msg').modal();
+	});
+});
+
+
+
 	/*
 // 폼전송
 const form = document.forms[0];
