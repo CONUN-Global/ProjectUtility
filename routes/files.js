@@ -465,6 +465,11 @@ router.post('/store', upload.array('task_file'), async function (req, res, next)
 module.exports = router;
 
 
+// IPFS서버 부하를 줄이고자 파일처리를 지연시킨다
+function delay() {
+    return new Promise(resolve => setTimeout(resolve, 100));
+}
+
 // 사용자 함수 설정
 // IPFS 파일저장
 const addFile = async (fileName, filePath, ) => {
@@ -475,9 +480,11 @@ const addFile = async (fileName, filePath, ) => {
         content: file
     });
     const fileHash = fileAdded.cid.string;
+    await delay(); // 파일등록을 지연한다
 
     return fileHash;
 }
+
 // IPFS 버퍼저장
 const addData = async (data) => {
     const json_str = JSON.stringify(data);
