@@ -1,4 +1,4 @@
-# Conun ProjectUtility
+# CONUN ProjectUtility
 
 ### 설치 및 실행방법 
 
@@ -6,6 +6,7 @@
 
 ```bash
 git clone https://github.com/CONUN-Global/ProjectUtility.git Dir_Name
+cd Dir_name
 ```
 2. node.js 및 npm 명령
 
