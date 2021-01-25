@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var validator = require('validator');
+//var sleep = require('sleep');
 var fs = require('fs');
 var path = require('path');
 var multer = require('multer');
@@ -173,6 +174,7 @@ router.post('/store', upload.array('task_file'), async function (req, res, next)
                         var pushDataSub = new Object();
                         pushDataSub.NAME = `${subtaskid_pfix}`;
                         pushDataSub.HASH = hash;
+                        //sleep.sleep(1);
 
                         if (pre_fix == "P") { // Proccess
                             //console.log('pr_fix : P');
@@ -268,6 +270,7 @@ router.post('/store', upload.array('task_file'), async function (req, res, next)
                         var pushData = new Object();
                         pushData.NAME = `${name_pfix}`;
                         pushData.HASH = hash;
+                        //sleep.sleep(1);
 
                         if (type_pfix.toUpperCase() == "P") { // Proccess
                             var val = fileinfo.coreinfo.corelist.find(function (item) {
@@ -467,29 +470,39 @@ module.exports = router;
 
 // IPFS서버 부하를 줄이고자 파일처리를 지연시킨다
 function delay() {
-    return new Promise(resolve => setTimeout(resolve, 100));
+    return new Promise(resolve => setTimeout(resolve, 300));
 }
+
 
 // 사용자 함수 설정
 // IPFS 파일저장
-const addFile = async (fileName, filePath, ) => {
-    ipfs = ipfsClient(full_address);
-    const file = fs.readFileSync(filePath);
-    const fileAdded = await ipfs.add({
-        path: fileName,
-        content: file
-    });
-    const fileHash = fileAdded.cid.string;
-    await delay(); // 파일등록을 지연한다
+const addFile = async (fileName, filePath) => {
+    try{
+        ipfs = ipfsClient(full_address);
+        await delay(); //파일 등록을 지연한다
+        const file = fs.readFileSync(filePath);
+        const fileAdded = await ipfs.add({
+            path: fileName,
+            content: file
+        });
+        const fileHash = fileAdded.cid.string;
 
-    return fileHash;
+        return fileHash;
+    } catch(error){
+        console.log("Upload Faile: ", error);
+    }
 }
 
 // IPFS 버퍼저장
 const addData = async (data) => {
-    const json_str = JSON.stringify(data);
-    const Added = await ipfs.add(Buffer.from(json_str));
-    const Hash = Added.cid.string;
+    try{
+        await delay(); //정보 저장을 지연한다
+        const json_str = JSON.stringify(data);
+        const Added = await ipfs.add(Buffer.from(json_str));
+        const Hash = Added.cid.string;
 
-    return Hash;
+        return Hash;
+    } catch(error){
+        console.log("Data Faile: ", error);
+    }
 }
