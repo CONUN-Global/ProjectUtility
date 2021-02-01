@@ -489,7 +489,7 @@ const addFile = async (fileName, filePath) => {
 
         return fileHash;
     } catch(error){
-        console.log("Upload Faile: ", error);
+        console.log("Upload Faile(" + fileName + "): ", error);
     }
 }
 
@@ -503,6 +503,6 @@ const addData = async (data) => {
 
         return Hash;
     } catch(error){
-        console.log("Data Faile: ", error);
+        console.log("Data Faile(" + data + "): ", error);
     }
 }
