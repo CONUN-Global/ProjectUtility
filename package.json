@@ -13,8 +13,10 @@
     "assets": [
       "views/**/*",
       "public/**/*",
-      "routes/**/*",
-      "uploads/**/*"
+      "express/**/*",
+      "index/**/*",
+      "app/**/*",
+      "routes/**/*"
     ]
   },
   "dependencies": {
