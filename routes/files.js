@@ -55,6 +55,9 @@ const { getPackedSettings } = require('http2');
 
 // 라우터 처리 /json ~ 블라블라 /json/store
 router.get('/', function (req, res, next) {
+    if (!fs.existsSync('uploads')) {
+        fs.mkdirSync('uploads');
+    }
     res.sendFile(__dirname + '/form.html'); // 파일호출을 위하 정확한 경로지정 필수
 });
 
