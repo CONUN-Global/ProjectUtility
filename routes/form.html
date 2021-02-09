@@ -292,7 +292,9 @@ $('#SubmitBtnJson').click(function() {
 			}
 		},
 		error: function(request,status,error) {
-        	console.log("code = "+ request.status + " message = " + request.responseText + " error = " + error); // 실패 시 처리
+			console.log("code = "+ request.status);
+			console.log("message = " + request.responseText);
+			console.log("error = " + error); // 실패 시 처리
         }
 	});
 
