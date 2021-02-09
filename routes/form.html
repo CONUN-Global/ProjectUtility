@@ -291,9 +291,9 @@ $('#SubmitBtnJson').click(function() {
 				console.log('error');
 			}
 		},
-		error: function (err) {
-			console.log(err);
-		}
+		error: function(request,status,error) {
+        	console.log("code = "+ request.status + " message = " + request.responseText + " error = " + error); // 실패 시 처리
+        }
 	});
 
 	//$("#jsonCreateForm").attr('action','/json/ing').attr('method','post').submit();
