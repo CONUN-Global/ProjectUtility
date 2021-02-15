@@ -202,9 +202,6 @@
   					<input type="button" class="btn btn-primary float-right" value="Create" id="SubmitBtnJson">
 				</div><!--card-footer-->
 			</div><!--card-->
-			<div class="file_list">
-				<p></p>
-			</div>
 			</form>
 		</div><!--container-->
 	</main>
@@ -226,8 +223,6 @@
 		</div>
 	</div>
 </div>
-
-
 
 </body>
 </html>
@@ -266,25 +261,35 @@ $('#SubmitBtnJson').click(function() {
 
 	var form = $('#jsonCreateForm')[0];
 	var formData = new FormData(form);
+	const proj_name = $('#proj_name').val();
+	const proj_id = $('#proj_id').val();
 
 	$.ajax({
 		type: 'POST',
-		url: '/json/store',
+		url: '/json/store', // 일처리하는 컨트롤러
 		data: formData,
+		async : true, // true(비동기화), false(동기화)
 		dataType: 'JSON',
 		processData: false,
 		contentType: false,
 		beforeSend: function() {
-			$(".card-body").empty().append("<div id='loading'>처리중...</div>");
+			$('.card-footer').hide(); // footer 영역 숨기기
+			$('.card-body').empty().append("<div id='loading'>Process 처리중, 해당 페이지를 닫지 마십시오.<br><b>현재 처리중이며 해당 결과를 대기중입니다.<b></div>");
 		},
 		success: function (data, msg) {
 			if (msg=='success') {
-				const jsonFileName = $('#proj_name').val() + '_' + $('#proj_id').val() + '.json';
+				const jsonFileName = proj_name + '_' + proj_id + '.json';
 				const json = JSON.stringify(data);
 				const el = document.createElement("a");
 				el.setAttribute("href", "data:application/json;charset=utf-8," + json);
 				el.setAttribute("download", jsonFileName);
 				el.click();
+			} else {
+				console.log('error');
+			}
+		},
+		complete: function (data, msg) {
+			if (msg=='success') {
 				// 모두 완료 되면 페이지 전환한다
 				$("#jsonCreateForm").attr('action','/json/complete').attr('method','post').submit();
 			} else {

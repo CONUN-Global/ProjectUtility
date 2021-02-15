@@ -51,13 +51,11 @@ var upload = multer({
 var formidable = require("formidable");
 var util = require('util');
 const { getPackedSettings } = require('http2');
+const { writeFileSync } = require('fs-extra');
 
 
 // 라우터 처리 /json ~ 블라블라 /json/store
 router.get('/', function (req, res, next) {
-    if (!fs.existsSync('uploads')) {
-        fs.mkdirSync('uploads');
-    }
     res.sendFile(__dirname + '/form.html'); // 파일호출을 위하 정확한 경로지정 필수
 });
 
@@ -116,9 +114,9 @@ router.post('/complete', function (req, res, next) {
         id:"",
         pw:""
     };
-
     
 
+//var gflag = 0;
 router.post('/store', upload.array('task_file'), async function (req, res, next) {
     //console.log(req.files);
 
@@ -127,9 +125,18 @@ router.post('/store', upload.array('task_file'), async function (req, res, next)
     ipfs_port = req.body.port;
     full_address = 'http://' + ipfs_ip + ":" + ipfs_port;
 
+    /*
+    console.log("1 start post ########################");
+    console.log("2 start post ########################");
+    if(gflag){
+        console.log("0 start post ########################");
+        return;
+    }
+    gflag = 1;
+    console.log("2 start post ########################");
+    */
 
     var files = req.files;
-    //console.log(files);
     var fileinfo = new Object();
 
     if (Array.isArray(files)) {
@@ -352,9 +359,11 @@ router.post('/store', upload.array('task_file'), async function (req, res, next)
             }
 
         } //endfor 파일갯수만큼
-        console.log("core info", fileinfo.coreinfo.corelist);
-        task_test(obj, fileinfo, req, res)
+        //fs.writeFileSync("data_file",JSON.stringify(fileinfo));
 
+       // console.log("core info", fileinfo.coreinfo.corelist);
+        task_test(obj, fileinfo, req, res)
+        
 //////////////////////////////////////////////////////////////////
 //make project.json
 //////////////////////////////////////////////////////////////////
@@ -424,7 +433,7 @@ module.exports = router;
 async function task_test(obj, fileinfo, req, res){
     var task_value = obj.credit / fileinfo.taskinfo.tasklist.length;
 
-    ipfs = ipfsClient(full_address);
+
     var index = 0;
     async.waterfall([
 
@@ -451,23 +460,35 @@ async function task_test(obj, fileinfo, req, res){
         }
 
     ], function (err, result) {
-        console.log("2 end all process", obj.task_info.tasknamelist.length, obj.task_info.tasknamelist);
+        //console.log("2 end all process", obj.task_info.tasknamelist.length, obj.task_info.tasknamelist);
         /**
          * 결과값 ajax 응답
          */
+        var filename = '';
+        if (req.body.msg_type) {
+            filename = req.body.proj_name + '_' + req.body.proj_id + '.json';
+        } else {
+            filename = 'untitle_project.json';
+        }
+
+        //fs.writeFileSync(filename, JSON.stringify(obj))
+        console.log("end file");
+
+
         res.send(obj);
 
         // ajax 응답후 저장된 dir을 삭제하여 재생성한다
         fs.removeSync('uploads');
         fs.mkdirSync('uploads');
+        gflag = 0;
     }); 
 }
 
 async function ipfsupload_core(ipfs, files, obj, index, main_core_callback) {
 
-    console.log("core coreitem all", files.coreinfo.corelist, files.coreinfo.corelist.length, index);
+
     var coreitem = files.coreinfo.corelist[index];
-    console.log("core coreitem", coreitem);
+    //console.log("core coreitem", coreitem);
     var ostype = coreitem.OS_TYPE;
     var processorlist = coreitem.PROCESSOR; 
     var dlllist = coreitem.DLL; 
@@ -552,8 +573,21 @@ async function ipfsupload_core(ipfs, files, obj, index, main_core_callback) {
 
 async function ipfsupload_c1(ipfs,  item_info, Core_info, index, callback) {
     console.log("upload core info: ", item_info);
-    var rval = await ipfs.add(JSON.stringify(item_info));
-    console.log("upload core info hash : ", rval);
+    var cont = JSON.stringify(item_info);
+    var rval;
+    try{
+         rval = await ipfs.add(cont);
+    } catch(err){
+        ipfs = ipfsClient(full_address);
+        try{
+             rval = await ipfs.add(cont);
+        } catch(err){
+            ipfs = ipfsClient(full_address);
+            console.log("1 ipfsaddr: ", full_address);
+            rval = await ipfs.add(cont);
+        } 
+    }
+    //console.log("upload core info hash : ", rval);
     Core_info.core_addr = rval.path;
     callback(null, Core_info);
   
@@ -561,7 +595,7 @@ async function ipfsupload_c1(ipfs,  item_info, Core_info, index, callback) {
 
 async function ipfsupload_core_info(ipfs, obj, Core_info, item_info, index, callback_core_info) {
 
-    console.log("core file name: ", Core_info.core_type);
+    console.log("core file info: ", Core_info.core_type);
     Core_info.core_CRC = "0x12345678";//CalcCRC(JSON.stringify(item_info), len);
 
     async.waterfall([
@@ -578,21 +612,13 @@ async function ipfsupload_core_info(ipfs, obj, Core_info, item_info, index, call
 
 }  
 
-async function ipfsupload_c2(ipfs, upload_addr, i, callback) {
-
-    let cont = fs.readFileSync(upload_addr);
-    var rval = await ipfs.add(cont);
-    console.log("core_process addr: ", rval);
-    callback(null, rval, i);  
-}
-
 async function ipfsupload_core_processor(ipfs, itemlist, iteminfo, i, callback_pro) {
    
     var upload_addr = itemlist[i];
     var split = upload_addr.split("_");
 
     itemname = split[split.length - 1];
-    console.log("file name: ", itemname);
+    console.log("core file name: ", itemname);
     async.waterfall([
 
         function (callback) {
@@ -622,7 +648,19 @@ async function ipfsupload_core_processor(ipfs, itemlist, iteminfo, i, callback_p
 async function ipfsupload_c3(ipfs, upload_addr, i, callback) {
     console.log("dll addr: ", upload_addr);
     let cont = fs.readFileSync(upload_addr);
-    var rval = await ipfs.add(cont);
+    var rval;
+    try{
+         rval = await ipfs.add(cont);
+    } catch(err){
+        ipfs = ipfsClient(full_address);
+        try{
+             rval = await ipfs.add(cont);
+        } catch(err){
+            ipfs = ipfsClient(full_address);
+            console.log("1 ipfsaddr: ", full_address);
+            rval = await ipfs.add(cont);
+        } 
+    }
     callback(null, rval, i);  
 }
 
@@ -632,7 +670,7 @@ async function ipfsupload_core_dll(ipfs, itemlist, iteminfo, i, callback_dll) {
     var split = upload_addr.split("_");
 
     itemname = split[split.length - 1];
-    console.log("file name: ", itemname);
+    console.log("core dll file name: ", itemname);
     async.waterfall([
 
         function (callback) {
@@ -662,9 +700,21 @@ async function ipfsupload_core_dll(ipfs, itemlist, iteminfo, i, callback_dll) {
 }
 
 async function ipfsupload_c4(ipfs, upload_addr, i, callback) {
-    console.log("other addr: ", upload_addr);
+    //console.log("other addr: ", upload_addr);
     let cont = fs.readFileSync(upload_addr);
-    var rval = await ipfs.add(cont);
+    var rval;
+    try{
+         rval = await ipfs.add(cont);
+    } catch(err){
+        ipfs = ipfsClient(full_address);
+        try{
+             rval = await ipfs.add(cont);
+        } catch(err){
+            ipfs = ipfsClient(full_address);
+            console.log("1 ipfsaddr: ", full_address);
+            rval = await ipfs.add(cont);
+        } 
+    }
     callback(null, rval, i); 
 }
 
@@ -674,7 +724,7 @@ async function ipfsupload_core_other(ipfs, itemlist, iteminfo, i, callback_other
     var split = upload_addr.split("_");
 
     itemname = split[split.length - 1];
-    console.log("file name: ", itemname);
+    console.log("core other file name: ", itemname);
     async.waterfall([
 
         function (callback) {
@@ -703,6 +753,103 @@ async function ipfsupload_core_other(ipfs, itemlist, iteminfo, i, callback_other
 
 } 
 
+async function ipfsupload_c2(ipfs, upload_addr, i, callback) {
+
+    let cont = fs.readFileSync(upload_addr);
+    var rval;
+    try{
+         rval = await ipfs.add(cont);
+    } catch(err){
+        ipfs = ipfsClient(full_address);
+        try{
+             rval = await ipfs.add(cont);
+        } catch(err){
+            ipfs = ipfsClient(full_address);
+            console.log("1 ipfsaddr: ", full_address);
+            rval = await ipfs.add(cont);
+        } 
+    }
+    //console.log("core_process addr: ", rval);
+    callback(null, rval, i);  
+}
+
+//////////////////////////////
+//task process
+//////////////////////////////
+
+async function ipfsupload_t3(ipfs, itemlist, i, callback) {
+    var upload_addr = itemlist[i];
+
+    //console.log("task sub processor addr: ", upload_addr);
+    let cont = fs.readFileSync(upload_addr);
+    var rval;
+    try{
+         rval = await ipfs.add(cont);
+    } catch(err){
+        ipfs = ipfsClient(full_address);
+        try{
+             rval = await ipfs.add(cont);
+        } catch(err){
+            ipfs = ipfsClient(full_address);
+            console.log("1 ipfsaddr: ", full_address);
+            rval = await ipfs.add(cont);
+        } 
+    }
+    callback(null, rval, i);
+}
+async function ipfsupload_task_processor_sub(ipfs, itemlist, iteminfo, i, callback_sub_pro) {
+   
+    var upload_addr = itemlist[i];
+    var split = upload_addr.split("_");
+
+    itemname = split[split.length - 1];
+   // console.log("task sub process file name: ", itemname);
+
+    async.waterfall([
+
+        function (callback) {
+            ipfsupload_t3(ipfs, itemlist, i, callback)
+        }
+
+    ], function (err, result, index) {
+
+        var item = {
+            NAME:itemname,
+            HASH:result.path
+        }
+       // console.log("item", item);
+        iteminfo.P.push(item);
+        index++;
+        if (index < itemlist.length) {
+          //  console.log("task sub processor index", index);
+            ipfsupload_task_processor_sub(ipfs, itemlist, iteminfo, index, callback_sub_pro)
+        }
+        else {
+           // console.log("end task sub processor", index);
+            callback_sub_pro(null, iteminfo);
+        }
+    });
+
+}
+
+async function ipfsupload_t2(ipfs, itemdata, callback) {
+    var cont = JSON.stringify(itemdata);
+    var rval;
+    try{
+         rval = await ipfs.add(cont);
+    } catch(err){
+        ipfs = ipfsClient(full_address);
+        try{
+             rval = await ipfs.add(cont);
+        } catch(err){
+            ipfs = ipfsClient(full_address);
+            console.log("1 ipfsaddr: ", full_address);
+            rval = await ipfs.add(cont);
+        } 
+    }
+    callback(null, rval);
+}
+
 
 async function ipfsupload_task_processor_update(ipfs, ostype, itemdata, iteminfo, callback_update_pro) {           
 
@@ -719,10 +866,9 @@ async function ipfsupload_task_processor_update(ipfs, ostype, itemdata, iteminfo
             process_loca:result.path,
             process_CRC:"0x77777777"//calcCRC(itemdata, len)
         }
-        console.log("os item", item);
+      //  console.log("os item", item);
         iteminfo.OS.push(item);
-        callback_update_pro(null, iteminfo);
-       
+        callback_update_pro(null, iteminfo);       
     });
 
 } 
@@ -764,10 +910,9 @@ async function ipfsupload_task_processor_start(ipfs, itemlist, iteminfo, index, 
         } 
 
     ], function (err, result) {
-
+       // console.log("task processor info", index, itemlist.length, itemlist);
         index++;
-        if (index < itemlist.length) {
-            console.log("task processor index", index);
+        if (index < itemlist.length) {  
             ipfsupload_task_processor_start(ipfs, itemlist, result, index, callback_pro_start)
         }
         else {
@@ -778,8 +923,288 @@ async function ipfsupload_task_processor_start(ipfs, itemlist, iteminfo, index, 
 
 }
 
+//////////////////////////////
+//end task process
+//////////////////////////////
+
+
+//////////////////////////////
+//task data
+//////////////////////////////
+
+async function ipfsupload_td_1(ipfs, itemlist, i, callback) {
+    var upload_addr = itemlist[i];
+
+    //console.log("task sub data addr: ", upload_addr);
+    let cont = fs.readFileSync(upload_addr);
+    var rval;
+    try{
+         rval = await ipfs.add(cont);
+    } catch(err){
+        ipfs = ipfsClient(full_address);
+        try{
+             rval = await ipfs.add(cont);
+        } catch(err){
+            ipfs = ipfsClient(full_address);
+            console.log("1 ipfsaddr: ", full_address);
+            rval = await ipfs.add(cont);
+        } 
+    }
+    callback(null, rval, i);
+}
+
+
+async function ipfsupload_task_data_sub(ipfs, itemlist, iteminfo, i, callback_sub_data) {
+   
+    var upload_addr = itemlist[i];
+    var split = upload_addr.split("_");
+
+    itemname = split[split.length - 1];
+    //console.log("task sub data file name: ", itemname);
+
+    async.waterfall([
+
+        function (callback) {
+            ipfsupload_td_1(ipfs, itemlist, i, callback)
+        }
+
+    ], function (err, result, index) {
+
+        var item = {
+            NAME:itemname,
+            HASH:result.path
+        }
+
+        iteminfo.D.push(item);
+        index++;
+        if (index < itemlist.length) {
+           // console.log("task sub data index", index);
+            ipfsupload_task_data_sub(ipfs, itemlist, iteminfo, index, callback_sub_data)
+        }
+        else {
+           // console.log("end task sub data", index);
+            callback_sub_data(null, iteminfo);
+        }
+    });
+
+}
+
+
+async function ipfsupload_td_3(ipfs, itemdata, callback) {
+
+    var cont = JSON.stringify(itemdata);
+    var rval;
+    try{
+         rval = await ipfs.add(cont);
+    } catch(err){
+        ipfs = ipfsClient(full_address);
+        try{
+             rval = await ipfs.add(cont);
+        } catch(err){
+            ipfs = ipfsClient(full_address);
+            console.log("1 ipfsaddr: ", full_address);
+            rval = await ipfs.add(cont);
+        } 
+    }
+    callback(null, rval);
+}
+
+
+async function ipfsupload_task_data_update(ipfs, itemdata, iteminfo, callback_update_data) {           
+
+    async.waterfall([
+
+        function (callback) {
+            ipfsupload_td_3(ipfs, itemdata, callback)
+        }
+
+    ], function (err, result) {
+
+        iteminfo.data_loca=result.path;
+        iteminfo.data_CRC="0x88888888"//calcCRC(itemdata, len)
+        callback_update_data(null, iteminfo);       
+    });
+
+} 
+async function ipfsupload_task_data_start(ipfs, itemlist, iteminfo, index, callback_data_start) {
+   
+    var upload_addrlist = itemlist;
+    var taskdata ={
+        D:[]
+    }
+    async.waterfall([
+
+        function (callback) {
+
+            if(upload_addrlist.length > 0){
+                var j = 0;
+                ipfsupload_task_data_sub(ipfs, upload_addrlist, taskdata, j, callback);     
+            }
+            else{
+                //callback_pro_start(null, iteminfo, i);
+                callback(null, iteminfo)
+            }                                
+        }, 
+        function (arg1, callback) {
+
+            if(upload_addrlist.length > 0){    
+                ipfsupload_task_data_update(ipfs, arg1, iteminfo, function(res1){
+                    callback(null, iteminfo);
+                });     
+            }
+            else{
+                callback(null, iteminfo)
+            }                                
+        } 
+
+    ], function (err, result) {
+       callback_data_start(result);    
+    }); 
+}
+
+//////////////////////////////
+//end task data
+//////////////////////////////
+
+
+//////////////////////////////
+//task para
+//////////////////////////////
+
+
+async function ipfsupload_tp_1(ipfs, itemlist, i, callback) {
+    var upload_addr = itemlist[i];
+
+    let cont = fs.readFileSync(upload_addr);
+    var rval;
+    try{
+         rval = await ipfs.add(cont);
+    } catch(err){
+        ipfs = ipfsClient(full_address);
+        try{
+             rval = await ipfs.add(cont);
+        } catch(err){
+            ipfs = ipfsClient(full_address);
+            console.log("1 ipfsaddr: ", full_address);
+            rval = await ipfs.add(cont);
+        } 
+    }
+    callback( null, rval, i);
+}
+
+
+async function ipfsupload_task_para_sub(ipfs, itemlist, iteminfo, i, callback_sub_data) {
+   
+    var upload_addr = itemlist[i];
+    var split = upload_addr.split("_");
+
+    itemname = split[split.length - 1];
+    //console.log("task sub para file name: ", itemname);
+    async.waterfall([
+
+        function (callback) {
+            ipfsupload_tp_1(ipfs, itemlist, i, callback)
+        }
+
+    ], function (err, result, index) {
+
+        var item = {
+            NAME:itemname,
+            HASH:result.path
+        }
+
+        iteminfo.I.push(item);
+        index++;
+        if (index < itemlist.length) {
+            ipfsupload_task_para_sub(ipfs, itemlist, iteminfo, index, callback_sub_data)
+        }
+        else {
+            callback_sub_data(null, iteminfo);
+        }
+    });
+
+}
+
+
+async function ipfsupload_tp_3(ipfs, itemdata, callback) {
+
+    var cont = JSON.stringify(itemdata);
+    var rval;
+    try{
+         rval = await ipfs.add(cont);
+    } catch(err){
+        ipfs = ipfsClient(full_address);
+        try{
+             rval = await ipfs.add(cont);
+        } catch(err){
+            ipfs = ipfsClient(full_address);
+            console.log("1 ipfsaddr: ", full_address);
+            rval = await ipfs.add(cont);
+        } 
+    }
+    callback(null, rval);
+}
+
+
+async function ipfsupload_task_para_update(ipfs, itemdata, iteminfo, callback_update_para) {           
+
+    async.waterfall([
+
+        function (callback) {
+            ipfsupload_tp_3(ipfs, itemdata, callback)
+        }
+
+    ], function (err, result) {
+
+        iteminfo.para_info_loca=result.path;
+        iteminfo.para_CRC="0x99999999"//calcCRC(itemdata, len)
+        callback_update_para(null, iteminfo);       
+    });
+
+} 
+async function ipfsupload_task_para_start(ipfs, itemlist, iteminfo, index, callback_para_start) {
+   
+    var upload_addrlist = itemlist;
+       var taskpara ={
+        I:[]
+    }
+    async.waterfall([
+
+        function (callback) {
+            if(upload_addrlist.length > 0){
+                var j = 0;
+                ipfsupload_task_para_sub(ipfs, upload_addrlist, taskpara, j, callback);   
+
+            }
+            else{
+                callback(null, iteminfo)
+            }                                
+        }, 
+        function (arg1, callback) {
+            if(upload_addrlist.length > 0){
+                ipfsupload_task_para_update(ipfs, arg1, iteminfo, function(res1){
+                    callback(null, iteminfo);
+                });     
+            }
+            else{
+                callback(null, iteminfo)
+            }                                
+        } 
+
+    ], function (err, result) {  
+        callback_para_start( result, index);
+    
+    }); 
+}
+
+
+
+//////////////////////////////
+//end task para
+//////////////////////////////
 
 async function ipfsupload_task(ipfs, task_value, files, obj, index, main_task_callback) {
+
 
     var taskiteminfo = files.taskinfo.tasklist[index];
     var sub_task_id = taskiteminfo.sub_task_id;
@@ -787,7 +1212,7 @@ async function ipfsupload_task(ipfs, task_value, files, obj, index, main_task_ca
     var datalist = taskiteminfo.D;
     var infolist = taskiteminfo.I;
 
-    console.log("task count num :", obj.total_task_num);
+    console.log("task count num :", index, obj.total_task_num, files.taskinfo.tasklist.length); // 총갯수에 대한 파악
     obj.total_task_num++;
     // ostype
     if (taskiteminfo != null){
@@ -813,21 +1238,18 @@ async function ipfsupload_task(ipfs, task_value, files, obj, index, main_task_ca
             function(callback) {
                 if (subprocessorlist.length > 0) {
                     var i = 0;
-                    console.log(" start task process 0 :", index, subprocessorlist.length);
                     ipfsupload_task_processor_start(ipfs, subprocessorlist, task_item_info, i, function(res1){
-                        console.log(" start task process 2 :", i);
                         callback(null, task_item_info)
                     });//task processor
                 }
                 else {
-                    console.log(" else task process 0 :", index);
+                    console.log(" else task process 0 :");
                     callback(null, task_item_info);
                 }
             },
             function(arg1, callback) {
                 var i = 0;
                 if (datalist.length > 0) {
-                    console.log(" start task data 0 :", i);
                     ipfsupload_task_data_start(ipfs, datalist, arg1, i, function(res1){
                         callback(null, res1);
                     });//data                   
@@ -842,8 +1264,8 @@ async function ipfsupload_task(ipfs, task_value, files, obj, index, main_task_ca
                 
                 var i = 0;
                 if (infolist.length > 0) {
-                    ipfsupload_taskitem_para(ipfs, infolist, arg1, i, function(res1){
-                        callback(null, arg1);
+                    ipfsupload_task_para_start(ipfs, infolist, arg1, i, function(res1, res2){
+                        callback(null, res1);
                     });//info
                 }
                 else {
@@ -854,9 +1276,7 @@ async function ipfsupload_task(ipfs, task_value, files, obj, index, main_task_ca
             function (arg1, callback) {
                 if (arg1 != null) {
                     obj.task_info.tasknamelist.push(arg1);
-                    console.log("end ipfsupload_add_taskitem", index);   
-                    callback(null, arg1)
-    
+                    callback(null, arg1)    
                 }
                 else {
                     callback(null, arg1);
@@ -864,7 +1284,6 @@ async function ipfsupload_task(ipfs, task_value, files, obj, index, main_task_ca
             }
         ], function (err, result) {
 
-            console.log(" taskitem list index and tasklistbuffer", index, files.taskinfo.tasklist.length);
             index++;
             if (index < files.taskinfo.tasklist.length) {
                 ipfsupload_task(ipfs, task_value, files, obj, index, function (res1) {
@@ -872,7 +1291,6 @@ async function ipfsupload_task(ipfs, task_value, files, obj, index, main_task_ca
                 });
             }
             else {
-                console.log("ipfsupload_1", index);
                 main_task_callback(index);
             }
         });
@@ -880,150 +1298,10 @@ async function ipfsupload_task(ipfs, task_value, files, obj, index, main_task_ca
     }
     else {
          console.log("there is worng Ostype", ostype);
+         index++;
          main_task_callback(index);
      }            
 }
 
-async function ipfsupload_t1(ipfs, item_info, i, callback) {
-    console.log("upload items info: ", item_info);
-    var rval = await ipfs.add(JSON.stringify(item_info));
-    Core_info.core_addr = rval.path;
-    callback(null, Core_info);
-}
-async function ipfsupload_t2(ipfs, itemdata, callback) {
-    var rval = await ipfs.add(JSON.stringify(itemdata));
-    callback(null, rval);
-}
 
 
-
-async function ipfsupload_t3(ipfs, itemlist, i, callback) {
-    var upload_addr = itemlist[i];
-
-    console.log("task sub processor addr: ", upload_addr);
-    let cont = fs.readFileSync(upload_addr);
-    var rval = await ipfs.add(cont);
-    callback(null, rval, i);
-}
-
-async function ipfsupload_task_processor_sub(ipfs, itemlist, iteminfo, i, callback_sub_pro) {
-   
-    var upload_addr = itemlist[i];
-    var split = upload_addr.split("_");
-
-    itemname = split[split.length - 1];
-    console.log("task process file name: ", itemname);
-
-    async.waterfall([
-
-        function (callback) {
-            ipfsupload_t3(ipfs, itemlist, i, callback)
-        }
-
-    ], function (err, result, index) {
-
-        var item = {
-            NAME:itemname,
-            HASH:result.path
-        }
-        console.log("item", item);
-        iteminfo.P.push(item);
-        index++;
-        if (index < itemlist.length) {
-            console.log("task sub processor index", index);
-            ipfsupload_task_processor_sub(ipfs, itemlist, iteminfo, index, callback_sub_pro)
-        }
-        else {
-            console.log("end task sub processor", index);
-            callback_sub_pro(null, iteminfo);
-        }
-    });
-
-}
-
-async function ipfsupload_t4(ipfs, itemlist, i, callback) {
-    var upload_addr = itemlist[i];
-    console.log("task data addr: ", upload_addr);
-    let cont = fs.readFileSync(upload_addr);
-    var rval = await ipfs.add(cont);
-    callback(rval, i);
-}
-
-async function ipfsupload_task_data_start(ipfs, itemlist, iteminfo, index, callback_data_start) {
-   
-    var upload_addr = itemlist[index];
-    var split = upload_addr.split("_");
-
-    itemname = split[split.length - 1];
-    console.log("data file name: ", itemname);
-    async.waterfall([
-
-        function (callback) {
-            ipfsupload_t4(ipfs, itemlist, index, function( res1, res2){
-                callback(null, res1, res2)
-            })
-        },
-        function (arg1, index, callback) {
-            iteminfo.data_loca = arg1.path;
-            iteminfo.data_CRC = "0x88888888"//clacCRC()
-            index++;
-            callback(null, index)      
-        }
-
-    ], function (err, index) {
-        // iteminfo.data_loca = result.path;
-        // iteminfo.data_CRC = "0x88888888"//clacCRC()
-        // console.log("task data : ", index, iteminfo);
-        // index++;
-
-        if (index < itemlist.length) {
-            console.log("restart task data index", index);
-            ipfsupload_task_data_start(ipfs, itemlist, iteminfo, index, function(res1){
-                callback_data_start(iteminfo);
-            })
-        }
-        else{
-            callback_data_start(iteminfo);
-        }
-
-    });
-}
-
-async function ipfsupload_t5(ipfs, itemlist, i, callback) {
-    var upload_addr = itemlist[i];
-    console.log("task para addr: ", upload_addr);
-    let cont = fs.readFileSync(upload_addr);
-    var rval = await ipfs.add(cont);
-    callback(null, rval, i);
-}
-
-async function ipfsupload_taskitem_para(ipfs, itemlist, iteminfo, i, callback_para) {
-   
-    var upload_addr = itemlist[i];
-    var split = upload_addr.split("_");
-
-    itemname = split[split.length - 1];
-    console.log("para file name: ", itemname);
-    async.waterfall([
-
-        function (callback) {
-            ipfsupload_t5(ipfs, itemlist, i, callback)
-        }
-
-    ], function (err, result, index) {   
-
-        iteminfo.para_info_loca = result.path;
-        iteminfo.para_CRC = "0x99999999"//clacCRC()
-        console.log("task para : ", iteminfo);
-        index++;
-        if (index < itemlist.length) {
-            console.log("task para index", index);
-            ipfsupload_taskitem_para(ipfs, itemlist, iteminfo, index, callback_para)
-        }
-        else {
-            console.log("end task para", index);
-            callback_para(iteminfo);
-        }
-    });
-
-}
